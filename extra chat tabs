@@ -58,4 +58,10 @@ MessageTypes = {
   [MessageModes.PrivateFrom] = MessageSettings.PMs,
   etc
 
+To fix party loot not showing in channel - find:
+  if msgtype == MessageSettings.none then return end
+
+Add this above
+  if string.find(text, "Loot of") then msgtype = MessageTypes[29] end
+
 When you restart the client and run your bot script it will automatically open new tabs and your PMs, loot and "green text" will appear in those channels instead.
