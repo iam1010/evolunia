@@ -1,0 +1,278 @@
+This is the first of the macro files I use:
+
+local walk_button = modules.game_luniabot.walkButton;
+
+function hasEffect(tile, effect)
+  for i, fx in ipairs(tile:getEffects()) do
+    if fx:getId() == effect then
+      return true
+    end
+  end
+  return false
+end
+
+macro(500, "Collect Essences", function()
+  for _, tile in pairs(g_map.getTiles(posz())) do
+    if (hasEffect(tile, 56)) then
+      walk_button:setChecked(false);
+      autoWalk(tile:getPosition(), 100, { ignoreNonPathable = true });
+      schedule(2000, function() walk_button:setChecked(true); end);
+    end
+  end
+end, toolsTab)
+
+onAddThing(function(tile, thing)
+  if thing:isItem() and thing:getId() == 2129 then
+    local pos = tile:getPosition().x .. "," .. tile:getPosition().y .. "," .. tile:getPosition().z
+    if not storage[pos] or storage[pos] < now then
+      storage[pos] = now + 20000
+    end
+    tile:setTimer(storage[pos] - now)
+  end
+end)
+
+macro(2000, "Open Monster Boxes",  function()
+  for i, tile in ipairs(g_map.getTiles(posz())) do
+    for u,item in ipairs(tile:getItems()) do
+      if (item and item:getId() == 9586) then
+        walk_button:setChecked(false);
+        g_game.use(item)
+        schedule(2000, function() walk_button:setChecked(true); end);
+        return
+      end
+    end
+  end
+end)
+
+macro(1000, "Collect Monster Flames",  function()
+  for i, tile in ipairs(g_map.getTiles(posz())) do
+      for u,item in ipairs(tile:getItems()) do
+          if (item:getId() == 21463) then
+            walk_button:setChecked(false);
+            autoWalk(tile:getPosition(), 100, {ignoreNonPathable = true})
+            schedule(2000, function() walk_button:setChecked(true); end);
+          end
+        end
+    end
+end)
+
+macro(1000, "Enter Invasion Portals",  function()
+  for i, tile in ipairs(g_map.getTiles(posz())) do
+      for u,item in ipairs(tile:getItems()) do
+          if (item:getId() == 25058) then
+              walk_button:setChecked(false);
+              autoWalk(tile:getPosition(), 100, {ignoreNonPathable = true})
+              schedule(3000, function() walk_button:setChecked(true); end);
+          end
+        end
+    end
+end)
+
+local manaId = 28650 -- Change for mana potion
+local manaPercent = 99
+macro(200, "Faster Mana Potion",  function()
+  if (manapercent() <= manaPercent) then
+    usewith(manaId, player)
+  end
+end)
+
+local healthId = 23373 -- Change for health potion
+local healthPercent = 99
+macro(200, "Faster Health Potion",  function()
+  if (hppercent() <= healthPercent) then
+    usewith(healthId, player)
+  end
+end)
+
+
+local healingSpell = 'Exura vita'
+local hpPercent = 90
+macro(50, "Faster Healing",  function()
+  if (hppercent() <= hpPercent) then
+    say(healingSpell)
+  end
+end)
+
+local singleTargetSpell = 'EXORI MAX PURA'
+local multiTargetSpell = 'EXEVO MAX PURA'
+local fatal_spell = 'EXEVO GRAN MAX MORT'
+local distance = 4
+local amountOfMonsters = 2
+local amountOfMonstersForFatal = 3
+
+macro(250, "Smart Casting",  function()
+    local specAmount = 0
+    if not g_game.isAttacking() then
+        return
+    end
+    for i,mob in ipairs(getSpectators()) do
+        if (getDistanceBetween(player:getPosition(), mob:getPosition())  <= distance and mob:isMonster())  then
+            specAmount = specAmount + 1
+        end
+    end
+    if (specAmount >= amountOfMonstersForFatal) then
+        say(fatal_spell)
+        say(multiTargetSpell)
+    elseif (specAmount >= amountOfMonsters) then
+        say(multiTargetSpell)
+    else
+        say(singleTargetSpell)
+    end
+end)
+
+local walkButton = modules.game_luniabot.walkButton
+function turnOnWalking()
+  walkButton:setChecked(true)
+end
+
+macro(100, "Smarter skull targeting", function()
+    if isInPz() then return end
+    local skulls_array = { 1,2, 3, 4, 5, 6 }
+    local skull_black = 5
+    local skull_found = false
+
+    local distance = 6
+    local lowest_health = 101
+    local tNpc = nil
+
+    for _, spec in pairs(getSpectators()) do
+        if spec:isMonster() then
+            if getDistanceBetween(player:getPosition(), spec:getPosition()) <= distance then
+                local pSkull = spec:getSkull()
+                if table.find(skulls_array, pSkull) then
+					tNpc = spec
+                    skull_found = true
+                    if pSkull == skull_black then
+                        break
+                    end
+                else
+                    if spec:getHealthPercent() < lowest_health and not skull_found then
+                        lowest_health = spec:getHealthPercent()
+                        tNpc = spec
+                    end
+                end
+            end
+        end
+    end
+
+    if tNpc and tNpc:isMonster() then
+        if getDistanceBetween(player:getPosition(), tNpc:getPosition()) <= distance then
+            if (g_game.getAttackingCreature() ~= tNpc) then
+                if skull_found or tNpc:getHealthPercent() <= lowest_health then
+                    g_game.attack(tNpc)
+                end
+            end
+        end
+    end
+end)
+
+macro(1000, "Sticky Follow", function() g_game.setChaseMode(1) end)
+
+addSeparator()
+local Objects = {435, 1948}
+local Doors = {7727, 8265, 1629, 1632, 5129, 5120, 8266, 7728}
+followName = "Hamish"
+if not storage[followName] then storage[followName] = { player = 'name'} end
+local toFollowPos = {}
+
+UI.Separator()
+UI.Label("Auto Follow")
+
+followTE = UI.TextEdit(storage[followName].player or "name", function(widget, newText)
+    storage[followName].player = newText
+end)
+
+local followChange = macro(200, "Follow Change", function() end)
+local followMacro = macro(20, "Follow", function()
+local position = pos()
+    local target = getCreatureByName(storage[followName].player)
+    if target then
+        local tpos = target:getPosition()
+        toFollowPos[tpos.z] = tpos
+    end
+    if not player:isWalking() and target and (getDistanceBetween(pos(), target:getPosition()) >2) then
+        for i,interact in ipairs(Doors) do
+            if (player:getDirection() == 1 or player:getDirection() == 3) then
+                for x=-1,2,2 do
+                    position["x"] = posx() + x
+                    position["y"] = posy()
+                    for y=-1,3,2 do
+                        if g_map.getTile(position) then
+                            for u,item in ipairs(g_map.getTile(position):getItems()) do
+                                if item:getId() == interact then
+                                    g_game.use(item)
+                                    return
+                                end
+                            end
+                        position["y"] = posy()+y
+                        end
+                    end
+                end
+            end
+            position = pos()
+            if (player:getDirection() == 0 or player:getDirection() == 2) then
+                for y=-1,2,2 do
+                    position["x"] = posx()
+                    position["y"] = posy()+y
+                    for x=-1,3,2 do
+                        for u,item in ipairs(g_map.getTile(position):getItems()) do
+                            if item:getId() == interact then
+                                g_game.use(item)
+                                return
+                            end
+                        end
+                        position["x"] = posx()+x
+                    end
+                end
+            end
+            position = pos()
+        end
+    elseif not player:isWalking() and not target and toFollowPos[posz()] then
+        for i,interact in ipairs(Objects) do
+            for x=-1,2,1 do
+                for y=-1,2,1 do
+                position["x"] = toFollowPos[posz()].x + x
+                position["y"] = toFollowPos[posz()].y + y
+                    if getDistanceBetween(pos(), position) <= 8 and g_map.getTile(position) then
+                        for u,item in ipairs(g_map.getTile(position):getItems()) do
+                            if item:getId() == interact then
+                                g_game.use(item)
+                                delay(500)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local p = toFollowPos[posz()]
+    if not p then return end
+    if autoWalk(p, 20, { ignoreNonPathable = true, precision = 1 }) then delay(100) end
+end)
+
+UI.Separator()
+onPlayerPositionChange(function(newPos, oldPos)
+  if followChange:isOff() then return end
+  if (g_game.isFollowing()) then
+    tfollow = g_game.getFollowingCreature()
+
+    if tfollow then
+      if tfollow:getName() ~= storage[followName].player then
+        followTE:setText(tfollow:getName())
+        storage[followName].player = tfollow:getName()
+      end
+    end
+  end
+end)
+
+onCreaturePositionChange(function(creature, newPos, oldPos)
+    if creature:getName() == storage[followName].player and newPos then
+        toFollowPos[newPos.z] = newPos
+    end
+end)
+
+
+--#other
+local tab = modules.game_console.addChannel(tr('Loot'), 98)
+local tab = modules.game_console.addChannel(tr('Green Text'), 99)
+local tab = modules.game_console.addChannel(tr('PMs'), 100)
