@@ -1,2 +1,56 @@
-I use a seperate loot and "green text"-tab while playing. Both to keep track of loot and every time the client send me "green text", i.e. when you "Look" at something or get status messages.
+I use a seperate loot and "green text"-tab while playing. Both to keep track of loot and every time the client send me "green text", 
+i.e. when you "Look" at something or get status messages.
 
+In your bot config add:
+
+local tab = modules.game_console.addChannel(tr('Loot'), 98)
+local tab = modules.game_console.addChannel(tr('Green Text'), 99)
+
+In your client config for textmessages(evolunia_otc\modules\game_textmessage\textmessage.lua) add:
+
+  lootGreen     = { color = TextColors.green,  consoleTab='Loot'},
+  textGreen     = { color = TextColors.green,  consoleTab='Green Text',   consoleOption='showInfoMessagesInConsole' },
+  
+to your MessageSettings array.
+Mine looks like this for reference:
+
+MessageSettings = {
+  none            = {},
+  lootGreen     = { color = TextColors.green,  consoleTab='Loot'},
+  textGreen     = { color = TextColors.green,  consoleTab='Green Text',   consoleOption='showInfoMessagesInConsole' },
+  consoleRed      = { color = TextColors.red,    consoleTab='Default' },
+  consoleOrange   = { color = TextColors.orange, consoleTab='Default' },
+  consoleBlue     = { color = TextColors.blue,   consoleTab='Default' },
+  centerRed       = { color = TextColors.red,    consoleTab='Server Log', screenTarget='lowCenterLabel' },
+  centerGreen     = { color = TextColors.green,  consoleTab='Server Log', screenTarget='highCenterLabel',   consoleOption='showInfoMessagesInConsole' },
+  centerWhite     = { color = TextColors.white,  consoleTab='Server Log', screenTarget='middleCenterLabel', consoleOption='showEventMessagesInConsole' },
+  bottomWhite     = { color = TextColors.white,  consoleTab='Server Log', screenTarget='statusLabel',       consoleOption='showEventMessagesInConsole' },
+  status          = { color = TextColors.white,  consoleTab='Server Log', screenTarget='statusLabel',       consoleOption='showStatusMessagesInConsole' },
+  statusSmall     = { color = TextColors.white,                           screenTarget='statusLabel' },
+  private         = { color = TextColors.lightblue,                       screenTarget='privateLabel' }
+}
+
+Last thing to do is to modify the "MessageType"-array. Should be found at around line 27 in same file as above.
+Replace the old [MessageModes.Look] and [MessageModes.Loot] with:
+  [MessageModes.Look] = MessageSettings.textGreen,
+  [MessageModes.Loot] = MessageSettings.lootGreen,
+
+Mine looks like this for reference:
+MessageTypes = {
+  [MessageModes.MonsterSay] = MessageSettings.consoleOrange,
+  [MessageModes.MonsterYell] = MessageSettings.consoleOrange,
+  [MessageModes.BarkLow] = MessageSettings.consoleOrange,
+  [MessageModes.BarkLoud] = MessageSettings.consoleOrange,
+  [MessageModes.Failure] = MessageSettings.statusSmall,
+  [MessageModes.Login] = MessageSettings.bottomWhite,
+  [MessageModes.Game] = MessageSettings.centerWhite,
+  [MessageModes.Status] = MessageSettings.status,
+  [MessageModes.Warning] = MessageSettings.centerRed,
+  [MessageModes.Look] = MessageSettings.textGreen,
+  [MessageModes.Loot] = MessageSettings.lootGreen,
+  [MessageModes.Red] = MessageSettings.consoleRed,
+  [MessageModes.Blue] = MessageSettings.consoleBlue,
+  [MessageModes.PrivateFrom] = MessageSettings.consoleBlue,
+  etc
+
+When you restart the client and run your bot script it will automatically open two new tabs and your loot and "green text" will appear in those channels instead.
