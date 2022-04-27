@@ -1,0 +1,81 @@
+This is the second macro file I use. 
+To enable both at the same time just put them both in the folder of the macro you're loading and the client will load all .lua files inside.
+
+local extras = addTab("Extras")
+
+local center={y=1146, x=920, z=9}
+macro(10, "Dance", function()
+  if(posx()>=center.x-2 and posx()<=center.x+2 and posy()>=center.y-2 and posy()<=center.y+2) then
+    local safeClosestPositionCoord=nil
+    local safeClosestPosition=99
+    local safeClosestPositionCenter=99
+    local unSafe=nil
+    for i, tile in ipairs(g_map.getTiles(posz())) do
+      local effectDeteced=0
+      for j, fx in ipairs(tile:getEffects()) do
+        if(fx:getId()>=19 and fx:getId()<=25) then
+          effectDeteced=1
+        end
+        if(fx:getId()<=25 and fx:getId()>=19 and getDistanceBetween(pos(),tile:getPosition())==0) then
+          unSafe=1
+        end
+      end
+      if(getDistanceBetween2(pos(),tile:getPosition())==1 and getDistanceBetween2(center,tile:getPosition())<getDistanceBetween2(pos(),center) and effectDeteced==0) then
+        autoWalk(tile:getPosition(), 100, {ignoreNextOutfitWindow=true})
+        return
+      elseif(getDistanceBetween(pos(),tile:getPosition())==1 and getDistanceBetween2(center,tile:getPosition())<getDistanceBetween2(pos(),center) and effectDeteced==0) then
+        tilePos = tile:getPosition()
+        if(tilePos.x+1==posx() and tilePos.y-1==posy()) then
+          g_game.walk(SouthWest,false)
+          return
+        elseif(tilePos.x+1==posx() and tilePos.y+1==posy()) then
+          g_game.walk(NorthWest,false)
+          return
+        elseif(tilePos.x-1==posx() and tilePos.y-1==posy()) then
+          g_game.walk(SouthEast,false)
+          return
+        elseif(tilePos.x-1==posx() and tilePos.y+1==posy()) then
+          g_game.walk(NorthEast,false)
+          return
+        end
+      end
+      if(getDistanceBetween2(pos(),tile:getPosition())<safeClosestPosition and effectDeteced==0 and tile:isWalkable()) then
+        safeClosestPositionCoord=tile:getPosition()
+        safeClosestPosition=getDistanceBetween2(pos(),tile:getPosition())
+        safeClosestPositionCenter=getDistanceBetween2(center,tile:getPosition())
+      end
+      if(getDistanceBetween2(pos(),tile:getPosition())==safeClosestPosition and getDistanceBetween2(center,tile:getPosition())<safeClosestPositionCenter and effectDeteced==0 and tile:isWalkable()) then
+        safeClosestPositionCoord=tile:getPosition()
+        safeClosestPosition=getDistanceBetween2(pos(),tile:getPosition())
+        safeClosestPositionCenter=getDistanceBetween2(center,tile:getPosition())
+      end
+
+    end
+    if unSafe then
+      if(getDistanceBetween(pos(),safeClosestPositionCoord)==1 and getDistanceBetween2(pos(),safeClosestPositionCoord)==2) then
+        if(safeClosestPositionCoord.x+1==posx() and safeClosestPositionCoord.y-1==posy()) then
+          g_game.walk(SouthWest,false)
+          return
+        elseif(safeClosestPositionCoord.x+1==posx() and safeClosestPositionCoord.y+1==posy()) then
+          g_game.walk(NorthWest,false)
+          return
+        elseif(safeClosestPositionCoord.x-1==posx() and safeClosestPositionCoord.y-1==posy()) then
+          g_game.walk(SouthEast,false)
+          return
+        elseif(safeClosestPositionCoord.x-1==posx() and safeClosestPositionCoord.y+1==posy()) then
+          g_game.walk(NorthEast,false)
+          return
+        end
+      else
+        autoWalk(safeClosestPositionCoord, 100, {ignoreNonPathable = true})
+      end
+    end
+  end
+end, extras)
+function getDistanceBetween2(Coord1,Coord2)
+  return (Coord1.x-Coord2.x)*(Coord1.x-Coord2.x)+(Coord1.y-Coord2.y)*(Coord1.y-Coord2.y)
+end
+
+macro(10000, "Auto Eat", function()
+use(3725)
+end, extras)
