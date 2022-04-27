@@ -1,4 +1,5 @@
 This macro will equip preset charms with hotkeys.
+Please note that both the backpack where stored charms are located and the charm purse needs to be open.
 ---Credits to Trainor creations---
 
 local charmContainer = nil
