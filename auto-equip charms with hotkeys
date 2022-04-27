@@ -1,0 +1,108 @@
+This macro will equip preset charms with hotkeys.
+---Credits to Trainor creations---
+
+local charmContainer = nil
+local storageContainer = nil
+local panelName = "charmManager"
+
+local function isWasdEnabled()
+    if modules.game_console then
+        return not modules.game_console.isChatEnabled()
+    end
+    return false
+end
+
+if type(storage[panelName]) ~= "table" then
+    storage[panelName] = { }
+end
+if type(storage[panelName].defCharms) ~= "table" then
+    storage[panelName].defCharms = { }
+end
+if type(storage[panelName].offCharms) ~= "table" then
+    storage[panelName].offCharms = { }
+end
+
+tbag = UI.Label("Charm Bag")
+UI.TextEdit(storage[panelName].charmStore or "shopping bag", function(widget, newText)
+    storage[panelName].charmStore = newText
+end)
+UI.Separator()
+
+addButton(100, "Toggle Charm Purse", function()
+    local item = getPurse()
+    if item then
+        use(item)
+    end
+end)
+
+
+UI.Separator()
+UI.Label("Defense Charms(U)")
+local defCharmCont = UI.Container(function(widget, items)
+    storage[panelName].defCharms = items
+end, true)
+defCharmCont:setHeight(35)
+defCharmCont:setItems(storage[panelName].defCharms)
+
+UI.Separator()
+UI.Label("Offensive Charm (Y):")
+local offCharmCont = UI.Container(function(widget, items)
+    storage[panelName].offCharms = items
+end, true)
+offCharmCont:setHeight(35)
+offCharmCont:setItems(storage[panelName].offCharms)
+
+
+function refreshbp()
+    charmContainer = nil
+    storageContainer = nil
+    for i, container in pairs(getContainers()) do
+        if container:getName() == storage[panelName].charmStore then
+            storageContainer = container
+        elseif string.find(container:getName(), "charm") then
+            charmContainer = container
+        end
+    end
+    if not charmContainer or not storageContainer then
+        tbag:setColor("#FF0000")
+        error("Charm Equipper: bag error.")
+    else
+        tbag:setColor("#FFFFFF")
+    end
+end
+
+onKeyDown(function(keys)
+    if (keys == "U" or keys == "Y") and isWasdEnabled() then
+        refreshbp()
+        if charmContainer and storageContainer then
+            if charmContainer:getSize() > 0 then
+                for index = charmContainer:getSize() - 1, 0, -1 do
+                    local item = charmContainer:getItem(index)
+                    g_game.move(item, storageContainer:getSlotPosition(storageContainer:getItemsCount()), item:getCount())
+                    delay(200)
+                end
+            end
+        end
+    end
+end)
+onKeyUp(function(keys)
+    if keys == "U" or keys == "Y" and isWasdEnabled() then
+        charmlist = storage[panelName].defCharms
+        if keys == "U" then
+            charmlist = storage[panelName].defCharms
+        elseif keys == "Y" then
+            charmlist = storage[panelName].offCharms
+        end
+        if charmContainer and storageContainer then
+            for index = storageContainer:getSize() - 1, 0, -1 do
+                local item = storageContainer:getItem(index)
+                for i, charmItem in ipairs(charmlist) do
+                    if item:getId() == charmItem.id then
+                        g_game.move(item, charmContainer:getSlotPosition(1), item:getCount())
+                        delay(200)
+                    end
+                end
+            end
+        end
+    end
+end)
