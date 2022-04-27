@@ -1,0 +1,26 @@
+These macros will use set potions a little bit faster than the ingame autoheal.
+Remember to turn of autoheal with !autoheal
+
+local manaId = 28650 -- Change for mana potion
+local manaPercent = 99
+macro(200, "Faster Mana Potion",  function()
+  if (manapercent() <= manaPercent) then
+    usewith(manaId, player)
+  end
+end)
+
+local healthId = 23373 -- Change for health potion
+local healthPercent = 99
+macro(200, "Faster Health Potion",  function()
+  if (hppercent() <= healthPercent) then
+    usewith(healthId, player)
+  end
+end)
+
+local healingSpell = 'Exura vita'
+local hpPercent = 90
+macro(50, "Faster Healing",  function()
+  if (hppercent() <= hpPercent) then
+    say(healingSpell)
+  end
+end)
