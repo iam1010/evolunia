@@ -1,5 +1,19 @@
-This will set a macro that can follow players through doors, tps and stairs (not ladders).
+This will set a macro that can follow players through doors, tps and stairs.
 You can also change the name of the person you wanna follow ingame instead of in config.
+
+addSeparator()
+local Objects = {435, 1948, 7771}
+local Doors = {7727, 8265, 1629, 1632, 5129, 5120, 8266, 7728}
+followName = "Hamish"
+if not storage[followName] then storage[followName] = { player = 'name'} end
+local toFollowPos = {}
+
+UI.Separator()
+UI.Label("Auto Follow")
+
+followTE = UI.TextEdit(storage[followName].player or "name", function(widget, newText)
+    storage[followName].player = newText
+end)
 
 local followChange = macro(200, "Follow Change", function() end)
 local followMacro = macro(20, "Follow", function()
@@ -82,10 +96,4 @@ onPlayerPositionChange(function(newPos, oldPos)
       end
     end
   end
-end)
-
-onCreaturePositionChange(function(creature, newPos, oldPos)
-    if creature:getName() == storage[followName].player and newPos then
-        toFollowPos[newPos.z] = newPos
-    end
 end)
