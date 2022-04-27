@@ -1,0 +1,6 @@
+This macro will just autoeat brown mushrooms.
+Change id to whatever you'd like it to eat.
+
+macro(10000, "Auto Eat", function()
+use(3725)
+end)
