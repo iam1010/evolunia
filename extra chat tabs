@@ -1,15 +1,18 @@
-I use a seperate loot and "green text"-tab while playing. Both to keep track of loot and every time the client send me "green text", 
+I use a seperate loot. "green text" and PMs-tab while playing to keep track of loot and every time the client send me "green text" or PMs while botting, 
 i.e. when you "Look" at something or get status messages.
 
 In your bot config add:
 
 local tab = modules.game_console.addChannel(tr('Loot'), 98)
 local tab = modules.game_console.addChannel(tr('Green Text'), 99)
+local tab = modules.game_console.addChannel(tr('PMs'), 100)
 
 In your client config for textmessages(evolunia_otc\modules\game_textmessage\textmessage.lua) add:
 
   lootGreen     = { color = TextColors.green,  consoleTab='Loot'},
   textGreen     = { color = TextColors.green,  consoleTab='Green Text',   consoleOption='showInfoMessagesInConsole' },
+  {...}
+  private         = { color = TextColors.lightblue, consoleTab='PMs',     screenTarget='privateLabel' }
   
 to your MessageSettings array.
 Mine looks like this for reference:
@@ -27,13 +30,15 @@ MessageSettings = {
   bottomWhite     = { color = TextColors.white,  consoleTab='Server Log', screenTarget='statusLabel',       consoleOption='showEventMessagesInConsole' },
   status          = { color = TextColors.white,  consoleTab='Server Log', screenTarget='statusLabel',       consoleOption='showStatusMessagesInConsole' },
   statusSmall     = { color = TextColors.white,                           screenTarget='statusLabel' },
-  private         = { color = TextColors.lightblue,                       screenTarget='privateLabel' }
+  private         = { color = TextColors.lightblue, consoleTab='PMs',     screenTarget='privateLabel' }
 }
 
 Last thing to do is to modify the "MessageType"-array. Should be found at around line 27 in same file as above.
 Replace the old [MessageModes.Look] and [MessageModes.Loot] with:
   [MessageModes.Look] = MessageSettings.textGreen,
   [MessageModes.Loot] = MessageSettings.lootGreen,
+And change the old [MessageModes.PrivateFrom] to:
+[MessageModes.PrivateFrom] = MessageSettings.PMs,
 
 Mine looks like this for reference:
 MessageTypes = {
@@ -50,7 +55,7 @@ MessageTypes = {
   [MessageModes.Loot] = MessageSettings.lootGreen,
   [MessageModes.Red] = MessageSettings.consoleRed,
   [MessageModes.Blue] = MessageSettings.consoleBlue,
-  [MessageModes.PrivateFrom] = MessageSettings.consoleBlue,
+  [MessageModes.PrivateFrom] = MessageSettings.PMs,
   etc
 
-When you restart the client and run your bot script it will automatically open two new tabs and your loot and "green text" will appear in those channels instead.
+When you restart the client and run your bot script it will automatically open new tabs and your PMs, loot and "green text" will appear in those channels instead.
