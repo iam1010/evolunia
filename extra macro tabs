@@ -1,0 +1,10 @@
+To create an extra tab in your macros just add:
+  local extras = addTab("Extras")
+To your config.
+
+You'll also have to specify what tab to put macros in. For example I use a tab called "Extras" for stuff I don't use or stuff I want to enable once and then forget about.
+
+Example:
+macro(10000, "Auto Eat", function()
+  use(3725)
+end, extras) -- here you specify the variable name of tab to put macro in.
