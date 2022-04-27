@@ -169,7 +169,7 @@ end)
 macro(1000, "Sticky Follow", function() g_game.setChaseMode(1) end)
 
 addSeparator()
-local Objects = {435, 1948}
+local Objects = {435, 1948, 7771}
 local Doors = {7727, 8265, 1629, 1632, 5129, 5120, 8266, 7728}
 followName = "Hamish"
 if not storage[followName] then storage[followName] = { player = 'name'} end
@@ -291,9 +291,7 @@ end
 if type(storage[panelName].offCharms) ~= "table" then
     storage[panelName].offCharms = { }
 end
-if type(storage[panelName].othCharms) ~= "table" then
-    storage[panelName].othCharms = { }
-end
+
 tbag = UI.Label("Charm Bag")
 UI.TextEdit(storage[panelName].charmStore or "shopping bag", function(widget, newText)
     storage[panelName].charmStore = newText
@@ -324,13 +322,6 @@ end, true)
 offCharmCont:setHeight(35)
 offCharmCont:setItems(storage[panelName].offCharms)
 
-UI.Separator()
-UI.Label("Other Charm (J):")
-local offCharmCont = UI.Container(function(widget, items)
-    storage[panelName].othCharms = items
-end, true)
-offCharmCont:setHeight(35)
-offCharmCont:setItems(storage[panelName].othCharms)
 
 function refreshbp()
     charmContainer = nil
@@ -351,7 +342,7 @@ function refreshbp()
 end
 
 onKeyDown(function(keys)
-    if (keys == "U" or keys == "Y" or keys == "J") and isWasdEnabled() then
+    if (keys == "U" or keys == "Y") and isWasdEnabled() then
         refreshbp()
         if charmContainer and storageContainer then
             if charmContainer:getSize() > 0 then
@@ -365,14 +356,12 @@ onKeyDown(function(keys)
     end
 end)
 onKeyUp(function(keys)
-    if keys == "U" or keys == "Y"  or keys == "J" and isWasdEnabled() then
+    if keys == "U" or keys == "Y" and isWasdEnabled() then
         charmlist = storage[panelName].defCharms
         if keys == "U" then
             charmlist = storage[panelName].defCharms
         elseif keys == "Y" then
             charmlist = storage[panelName].offCharms
-        elseif keys == "J" then
-            charmlist =  storage[panelName].othCharms
         end
         if charmContainer and storageContainer then
             for index = storageContainer:getSize() - 1, 0, -1 do
@@ -393,3 +382,4 @@ end)
 local tab = modules.game_console.addChannel(tr('Loot'), 98)
 local tab = modules.game_console.addChannel(tr('Green Text'), 99)
 local tab = modules.game_console.addChannel(tr('PMs'), 100)
+
