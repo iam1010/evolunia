@@ -1,0 +1,31 @@
+Macro for smarter casting. It will choose between 3 spells. Single target spell, multi target spell and fatal spell.
+The fatal spell is ment to be the one that has a longer cooldown in your vocation.
+Change to whatever spells you'd like and/or distance as well as the amount of monsters for fatal.
+
+
+local singleTargetSpell = 'EXORI MAX PURA'
+local multiTargetSpell = 'EXEVO MAX PURA'
+local fatal_spell = 'EXEVO GRAN MAX MORT'
+local distance = 4
+local amountOfMonsters = 2
+local amountOfMonstersForFatal = 3
+
+macro(250, "Smart Casting",  function()
+    local specAmount = 0
+    if not g_game.isAttacking() then
+        return
+    end
+    for i,mob in ipairs(getSpectators()) do
+        if (getDistanceBetween(player:getPosition(), mob:getPosition())  <= distance and mob:isMonster())  then
+            specAmount = specAmount + 1
+        end
+    end
+    if (specAmount >= amountOfMonstersForFatal) then
+        say(fatal_spell)
+        say(multiTargetSpell)
+    elseif (specAmount >= amountOfMonsters) then
+        say(multiTargetSpell)
+    else
+        say(singleTargetSpell)
+    end
+end)
