@@ -1,0 +1,91 @@
+This will set a macro that can follow players through doors, tps and stairs (not ladders).
+You can also change the name of the person you wanna follow ingame instead of in config.
+
+local followChange = macro(200, "Follow Change", function() end)
+local followMacro = macro(20, "Follow", function()
+local position = pos()
+    local target = getCreatureByName(storage[followName].player)
+    if target then
+        local tpos = target:getPosition()
+        toFollowPos[tpos.z] = tpos
+    end
+    if not player:isWalking() and target and (getDistanceBetween(pos(), target:getPosition()) >2) then
+        for i,interact in ipairs(Doors) do
+            if (player:getDirection() == 1 or player:getDirection() == 3) then
+                for x=-1,2,2 do
+                    position["x"] = posx() + x
+                    position["y"] = posy()
+                    for y=-1,3,2 do
+                        if g_map.getTile(position) then
+                            for u,item in ipairs(g_map.getTile(position):getItems()) do
+                                if item:getId() == interact then
+                                    g_game.use(item)
+                                    return
+                                end
+                            end
+                        position["y"] = posy()+y
+                        end
+                    end
+                end
+            end
+            position = pos()
+            if (player:getDirection() == 0 or player:getDirection() == 2) then
+                for y=-1,2,2 do
+                    position["x"] = posx()
+                    position["y"] = posy()+y
+                    for x=-1,3,2 do
+                        for u,item in ipairs(g_map.getTile(position):getItems()) do
+                            if item:getId() == interact then
+                                g_game.use(item)
+                                return
+                            end
+                        end
+                        position["x"] = posx()+x
+                    end
+                end
+            end
+            position = pos()
+        end
+    elseif not player:isWalking() and not target and toFollowPos[posz()] then
+        for i,interact in ipairs(Objects) do
+            for x=-1,2,1 do
+                for y=-1,2,1 do
+                position["x"] = toFollowPos[posz()].x + x
+                position["y"] = toFollowPos[posz()].y + y
+                    if getDistanceBetween(pos(), position) <= 8 and g_map.getTile(position) then
+                        for u,item in ipairs(g_map.getTile(position):getItems()) do
+                            if item:getId() == interact then
+                                g_game.use(item)
+                                delay(500)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local p = toFollowPos[posz()]
+    if not p then return end
+    if autoWalk(p, 20, { ignoreNonPathable = true, precision = 1 }) then delay(100) end
+end)
+
+UI.Separator()
+onPlayerPositionChange(function(newPos, oldPos)
+  if followChange:isOff() then return end
+  if (g_game.isFollowing()) then
+    tfollow = g_game.getFollowingCreature()
+
+    if tfollow then
+      if tfollow:getName() ~= storage[followName].player then
+        followTE:setText(tfollow:getName())
+        storage[followName].player = tfollow:getName()
+      end
+    end
+  end
+end)
+
+onCreaturePositionChange(function(creature, newPos, oldPos)
+    if creature:getName() == storage[followName].player and newPos then
+        toFollowPos[newPos.z] = newPos
+    end
+end)
